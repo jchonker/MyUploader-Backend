@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 
 import static cn.attackme.myuploader.utils.FileUtils.generateFileName;
@@ -31,7 +32,14 @@ public class FileService {
     public void upload(String name,
                        String md5,
                        MultipartFile file) throws IOException {
-        String path = UploadConfig.path + generateFileName();
+        //获取文件的原始名称
+        String originalFilename = name;
+        //获取文件的后缀名 .xxx
+        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        System.out.println("suffix:"+suffix);
+
+        //在后面拼接上文件类型,原来没有加上
+        String path = UploadConfig.path + generateFileName()+suffix;
         FileUtils.write(path, file.getInputStream());
         fileDao.save(new File(name, md5, path, new Date()));
     }
@@ -51,8 +59,14 @@ public class FileService {
                                 Integer chunks,
                                 Integer chunk,
                                 MultipartFile file) throws IOException {
+        //获取文件的原始名称
+        String originalFilename = name;
+        //获取文件的后缀名 .xxx
+        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        System.out.println("suffix:"+suffix);
+
         String fileName = getFileName(md5, chunks);
-        FileUtils.writeWithBlok(UploadConfig.path + fileName, size, file.getInputStream(), file.getSize(), chunks, chunk);
+        FileUtils.writeWithBlok(UploadConfig.path + fileName + suffix, size, file.getInputStream(), file.getSize(), chunks, chunk);
         addChunk(md5,chunk);
         if (isUploaded(md5)) {
             removeKey(md5);
